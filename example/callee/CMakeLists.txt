@@ -1,3 +1,4 @@
+#set(SRC_LIST userservice.cc ../user.pb.cc)
 set(SRC_LIST friendsservice.cc ../friend.pb.cc)
 
 

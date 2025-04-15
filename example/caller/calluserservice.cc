@@ -8,7 +8,7 @@
 #include "mprpcapplication.h"
 #include "user.pb.h"
 #include "mprpcchannel.h"
-#include "friend.pb.h"
+
 
 int main(int argc, char **argv)
 {
@@ -46,13 +46,7 @@ int main(int argc, char **argv)
     {
         std::cout << "rpc Register response error : " << rsp.result().errmsg() << std::endl;
     }
-
-    fixbug::GetFriendRequest greq;
-    greq.set_userid(123);
-    fixbug::GetFriendResponse gres;
     
-    fixbug::FriendServiceRpc_Stub grpc(new MprpcChannel());
-    grpc.GetFriendList(nullptr, &greq, &gres, nullptr);
 
     return 0;
 }
