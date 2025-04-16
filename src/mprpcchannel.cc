@@ -15,6 +15,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <error.h>
+#include <format>
 
 void MprpcChannel::CallMethod(const google::protobuf::MethodDescriptor *method, google::protobuf::RpcController *controller, const google::protobuf::Message *request, google::protobuf::Message *response, google::protobuf::Closure *done){
     const google::protobuf::ServiceDescriptor* sd = method->service();
@@ -107,8 +108,8 @@ void MprpcChannel::CallMethod(const google::protobuf::MethodDescriptor *method, 
 
     // std::string response_str(recv_buf, 0, recv_size); bug问题，存储的是二进制文件，会有\0，而使用string构造时，遇到\0就会认为字符串终止
     if(!response->ParseFromArray(recv_buf, recv_size)){
-        char errtxt[512] = {0};
-        sprintf(errtxt, "parse error! errno : %s", recv_buf);
+        char errtxt[1024] = {0};
+        snprintf(errtxt, sizeof(errtxt), "parse error! errno : %.500s", recv_buf);
         controller->SetFailed(errtxt);
         return;
     }

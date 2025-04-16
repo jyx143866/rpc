@@ -21,13 +21,14 @@ void RpcProvider::NotifyService(google::protobuf::Service *service)
     int methodCnt = pserviceDesc->method_count();
 
     // std::cout << "service_name:" << service_name << std::endl;
+    LOG_INFO("service_name:%s", service_name.c_str());
 
     for (int i = 0; i < methodCnt; ++i)
     {
         const google::protobuf::MethodDescriptor *pmethodDesc = pserviceDesc->method(i);
         std::string method_name = pmethodDesc->name();
         service_info.m_methodMap.insert({method_name, pmethodDesc});
-        // std::cout << "method_name:" << method_name << std::endl;
+        LOG_INFO("method name:%s", method_name.c_str());
     }
     service_info.m_service = service;
     m_serviceMap.insert({service_name, service_info});
@@ -47,6 +48,24 @@ void RpcProvider::Run()
     // 设置muduo库的线程数量
     server.setThreadNum(5);
     std::cout << "RpcProvider start" << std::endl;
+
+    // 把当前rpc节点上要发布的服务全部注册到zk上面，让rpc client可以从zk上发现服务
+    ZkClient zkCli;
+    zkCli.start();
+    // server_name为永久性节点 method_name为临时性节点
+    for(auto &sp : m_serviceMap)
+    {
+        std::string service_path = "/" + sp.first;
+        zkCli.Create(service_path.c_str(), nullptr, 0);
+        for(auto &mp : sp.second.m_methodMap)
+        {
+            std::string method_path = service_path + "/" + mp.first;
+            char method_path_data[128] = {0};
+            sprintf(method_path_data, "%s:%d", ip.c_str(), port);
+            zkCli.Create(method_path.c_str(), method_path_data, strlen(method_path_data), ZOO_EPHEMERAL);
+        }
+    }
+
     // 启动网络服务
     server.start();
     m_eventloop.loop();

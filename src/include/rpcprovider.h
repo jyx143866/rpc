@@ -6,6 +6,8 @@
  */
 #pragma once
 #include "google/protobuf/service.h"
+#include "zookeeperutil.h"
+#include "logger.h"
 #include "mprpcapplication.h"
 #include <google/protobuf/descriptor.h>
 #include <string>
