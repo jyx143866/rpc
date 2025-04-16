@@ -7,7 +7,6 @@
 #include <iostream>
 #include "mprpcapplication.h"
 #include "friend.pb.h"
-#include "mprpcchannel.h"
 
 int main(int argc, char **argv)
 {
@@ -18,18 +17,28 @@ int main(int argc, char **argv)
     request.set_userid(1222);
     fixbug::GetFriendResponse response;
 
-    stub.GetFriendList(nullptr, &request, &response, nullptr);
+    MprpcController controller;
 
-    if (0 == response.result().errcode())
+    stub.GetFriendList(&controller, &request, &response, nullptr);
+
+    if (controller.Failed())
     {
-        int size = response.friends_size();
-        for(int i = 0; i < size; ++i){
-            std::cout << "index:" << (i + 1) << " name:" << response.friends(i) << std::endl;
-        }
+        std::cout << controller.ErrorText() << std::endl;
     }
     else
     {
-        std::cout << "rpc GetFriendList response error : " << response.result().errmsg() << std::endl;
+        if (0 == response.result().errcode())
+        {
+            int size = response.friends_size();
+            for (int i = 0; i < size; ++i)
+            {
+                std::cout << "index:" << (i + 1) << " name:" << response.friends(i) << std::endl;
+            }
+        }
+        else
+        {
+            std::cout << "rpc GetFriendList response error : " << response.result().errmsg() << std::endl;
+        }
     }
 
     return 0;
